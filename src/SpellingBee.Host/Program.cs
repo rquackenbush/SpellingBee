@@ -1,15 +1,16 @@
 ﻿using SpellingBee.Engine;
+using System.Diagnostics;
 
 const string outerLetters = "ndriao";
 const char innerLetter = 'l';
 
-var wordEntries = WordEntryFactory.LoadWordEntries("dictionary.txt");
+var stopwatch = Stopwatch.StartNew();
 
-var finder = new WordFinder(wordEntries, innerLetter, outerLetters.ToCharArray());
+var wordReader = new FileWordReader("dictionary.txt");
 
-var result = finder.FindWords();
+var finder = new WordFinder();
 
-foreach(var word in result.Words)
+foreach(var word in finder.FindWords(wordReader, innerLetter, outerLetters.ToCharArray()))
 {
     var prefix = word.IsPanagram ? "*" : " ";
 
@@ -18,4 +19,6 @@ foreach(var word in result.Words)
 
 Console.WriteLine();
 
-Console.WriteLine($"  {result.Duration}");
+stopwatch.Stop();
+
+Console.WriteLine($" Elapsed time: {stopwatch.Elapsed}");

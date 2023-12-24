@@ -1,5 +1,5 @@
 # SpellingBee
-Solver for [New York Times Spelling Bee](https://www.nytimes.com/puzzles/spelling-bee) Game.
+Solver for [New York Times Spelling Bee](https://www.nytimes.com/puzzles/spelling-bee) game.
 
 ## Background
 I like to play the New York Times Spelling Bee. It's a fun little challenge. While playing, I became curious about how hard it would be to write a program that would brute force solve the puzzle for me. I've come up with a simple solution below. Note that this solution is only as good as the dictionary we provide it (and the one here is a far cry from what the foils at the NYT use). But it was a fun exercise and I thought I'd share my results (and thought process) here.
@@ -15,7 +15,7 @@ The New York Times Spelling Bee has the following rules / constraints:
 
 # Potential Solutions
 
-# Solution 1 - Determine all possible permutations of words
+## Solution 1 - Determine all possible permutations of words
 
 It turns out there a lot of possible permutations.
 
@@ -67,7 +67,7 @@ This gives us:
 
 That's an awful lot of permutations. That would take a while. Not only would we have to come up with all of those permutations, we would have to iterate through them and do a lookup in our dictionary to see if it's a valid word. Ugh. That doesn't seem efficient.
 
-# Solution 2 - Check all words in a dictionary to see if they match the available letters
+## Solution 2 - Check all words in a dictionary to see if they match the available letters
 
 It turns out that there are just over 50,000 words that match our requirements (4 - 19 letters, no special characters). But how to efficiently determine if a word matches the available letters?
 
@@ -152,7 +152,7 @@ bitwise and:                 00000000 00000000 00001000 00000000
 
 This shows us that the letter 'l' is included in the candidate word! This is a valid match! Woot!
 
-# Panagram
+## Panagram
 
 What about determining if we found a panagram? That's easy with some more mask magic!!!! Let's go back to the allowed letters, and re-use that mask:
 
@@ -228,22 +228,27 @@ Would a ParallelForEach be faster? I didn't bother. I'm _guessing_ that the over
 |Project|Description|
 |---|---|
 |SpellingBee.Engine|Core implementation of the word finding logic|
+|SpellingBee.Engine.Tests|Some unit testing of the above project.|
 |SpellingBee.FileConverter|One time use console app that reads in a .csv file and outputs a specially formatted text file of words|
 |SpellingBee.Host|Console Application that executes the word search.|
 
-# File Format
-To make loading of our dictionary fast, I've adopted the following file format for [dictionary.txt](src/SpellingBee.Host/dictionary.txt):
+# Dictionary Pre-Processing
 
-```
-31829      # total number of entries in the dictionary
-aaronic    # word[0]
-155909     # mask[0]
-aaronical  # word[1]
-157957     # mask[1s]
-...
-```
+There are a lot of words that can't possibly be solutions given the rules of the game. To that end, we filter out as many of these as possible:
+
+For example
+- Words that are shorter than 4 letters.
+- Words that are longer than 19 letters.
+- Words that contain more than 7 unique letters.
+- Words that contain "invalid" characters (anything outside of a-z).
+
+This gets rid of more than half of the words from the [dictionary.csv](src/SpellingBee.FileConverter/dictionary.csv) file that we started with.
+
+## File Format
+
+The file format for the  [dictionary.txt](src/SpellingBee.Host/dictionary.txt) file is trivial. It is a word per line.
 
 Disclaimers:
-- I haven't done the necessary profiling to determine if it's faster to just cacluate the word mask while loading the file. 
-- I also haven't tried using a binary file format to see if that's any faster.
+- I haven't profiled the code to see where the hotspots are.
+- I haven't tried using a binary file format to see if that's any faster.
 

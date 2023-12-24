@@ -4,6 +4,7 @@ using System.Globalization;
 
 var wordEntries = new List<WordEntry>(55000);
 var foundWords = new HashSet<string>();
+string? previousWord = null;
 
 using (var reader = new StreamReader("dictionary.csv"))
 using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
@@ -14,15 +15,19 @@ using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
 
         if (!string.IsNullOrEmpty(word))
         {
-            var wordEntry = WordEntryFactory.CreateWordEntry(word);
-
-            if (wordEntry != null)
+            //If the previous word is the same, that means that the input file is likely in alphabetical order.
+            if (word != previousWord)
             {
-                if (!foundWords.Contains(wordEntry.Value.Word))
-                {
-                    foundWords.Add(wordEntry.Value.Word);
+                previousWord = word;
 
-                    wordEntries.Add(wordEntry.Value);
+                if (WordEntryFactory.TryCreateWordEntry(word, out var wordEntry))
+                { 
+                    if (!foundWords.Contains(wordEntry.Word))
+                    {
+                        foundWords.Add(wordEntry.Word);
+
+                        wordEntries.Add(wordEntry);
+                    }
                 }
             }
         }
@@ -31,11 +36,10 @@ using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
 
 using (var writer = new StreamWriter("../../../../SpellingBee.Host/dictionary.txt"))
 {
-    writer.WriteLine($"{wordEntries.Count}");
-
     foreach(var wordEntry in wordEntries)
     {
         writer.WriteLine(wordEntry.Word);
-        writer.WriteLine(wordEntry.Mask);
     }
+
+    Console.WriteLine($"Wrote {wordEntries.Count:###,###,###,###} words to the custom dictionary.");
 }

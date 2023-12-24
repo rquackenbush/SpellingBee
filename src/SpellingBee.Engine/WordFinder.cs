@@ -1,77 +1,70 @@
-﻿using System.Diagnostics;
-
-namespace SpellingBee.Engine;
+﻿namespace SpellingBee.Engine;
 
 public class WordFinder
 {
-    private readonly WordEntry[] wordEntries;
-    private readonly char innerLetter;
-    private readonly char[] outerLetters;
-    private readonly char[] allLetters;
-    private readonly int numberOfLetters;
-
-    public WordFinder(WordEntry[] wordEntries, char innerLetter, char[] outerLetters)
+    /// <summary>
+    /// Find the words in the provided <paramref name="wordReader"/> that contain <paramref name="innerLetter"/> and some combination of <paramref name="outerLetters"/>.
+    /// </summary>
+    /// <param name="wordReader"></param>
+    /// <param name="innerLetter"></param>
+    /// <param name="outerLetters"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public IEnumerable<FoundWord> FindWords(FileWordReader wordReader, char innerLetter, char[] outerLetters)
     {
-        this.wordEntries = wordEntries;
-        this.innerLetter = innerLetter;
-        this.outerLetters = outerLetters;
-        numberOfLetters = outerLetters.Length + 1;
-        allLetters = new char[numberOfLetters];
+        var numberOfLetters = outerLetters.Length + 1;
 
-        allLetters[0] = innerLetter; ;
+        if (numberOfLetters != WordEntryFactory.LetterCount)
+            throw new InvalidOperationException($"Expected a total letter count of {WordEntryFactory.LetterCount} but received {numberOfLetters} instead.");
 
-        for(var index = 0; index < outerLetters.Length; index++)
-        {
-            allLetters[index + 1] = outerLetters[index];
-        }
-    }
+        var allowedLetters = outerLetters.AppendToNewArray(innerLetter);
 
-    public FindWordsResult FindWords()
-    {
-        var stopwatch = Stopwatch.StartNew();
-
-        var foundWords = new List<FoundWord>();
-
-        var requiredBit = WordEntryFactory.GetLetterMask(innerLetter);
-
-        if (requiredBit == null)
+        if (!WordEntryFactory.TryGetLetterMask(innerLetter, out var requiredBit))
             throw new InvalidOperationException("The center letter wasn't bitmapped.");
 
-        var allLettersMask = WordEntryFactory.GetWordMask(new string(allLetters));
-
-        if (allLettersMask == null)
+        if (!WordEntryFactory.TryGetWordMask(new string(allowedLetters), out var allLettersMask))
             throw new InvalidOperationException("All letters couldn't create a mask");
 
-        var invertedAllLettersMask = ~allLettersMask.Value;
+        var invertedAllowedLettersMask = ~allLettersMask;
 
-        foreach(var wordEntry in wordEntries)
+        foreach(var wordEntry in wordReader.ReadWords())
         {
-            if ((wordEntry.Mask & invertedAllLettersMask) == 0)
+            if (IsMatch(wordEntry.Mask, invertedAllowedLettersMask, requiredBit))
             {
-                if ((wordEntry.Mask & requiredBit) > 0)
-                {
-                    var isPanagram = (wordEntry.Mask & allLettersMask.Value) == allLettersMask;
+                var isPanagram = IsPanagram(wordEntry.Mask, allLettersMask);
 
-                    foundWords.Add(new FoundWord(wordEntry.Word, isPanagram));
-                }
+                yield return new FoundWord(wordEntry.Word, isPanagram);
             }
         }        
-
-        stopwatch.Stop();
-
-        return new FindWordsResult(stopwatch.Elapsed, foundWords.ToArray());
     }
 
-    //private string GetWord(char[] letters, int[] indices)
-    //{
-    //    var wordChars = new char[indices.Length];
+    /// <summary>
+    /// Determines if the provided word (mask) is a panagram.
+    /// </summary>
+    /// <param name="wordMask"></param>
+    /// <param name="allLettersMask"></param>
+    /// <returns></returns>
+    public static bool IsPanagram(uint wordMask, uint allLettersMask)
+    {
+        return (wordMask & allLettersMask) == allLettersMask;
+    }
 
-    //    for(var index = 0; index < indices.Length; index++)
-    //    {
-    //        wordChars[index] = letters[indices[index]];
-    //    }
+    /// <summary>
+    /// Determines if the provided word is a match (is only comprised of allowed letters and has the required letter)
+    /// </summary>
+    /// <param name="wordMask"></param>
+    /// <param name="invertedAllowedLettersMask"></param>
+    /// <param name="requiredBit"></param>
+    /// <returns></returns>
+    public static bool IsMatch(uint wordMask, uint invertedAllowedLettersMask, uint requiredBit)
+    {
+        if ((wordMask & invertedAllowedLettersMask) != 0)
+            return false;
+        
+        if ((wordMask & requiredBit) > 0)
+            return true;
 
-    //    return new string(wordChars);
-    //}   
+        return false;
+    }
 }
 

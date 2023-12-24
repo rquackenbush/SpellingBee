@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SpellingBee.FileConverter",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SpellingBee.Host", "SpellingBee.Host\SpellingBee.Host.csproj", "{1D71335D-64CE-4810-8814-C9E9EB10D64D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpellingBee.Engine.Tests", "SpellingBee.Engine.Tests\SpellingBee.Engine.Tests.csproj", "{2836E792-9B5C-45CF-BDA9-6A4ABC3A364B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{1D71335D-64CE-4810-8814-C9E9EB10D64D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1D71335D-64CE-4810-8814-C9E9EB10D64D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1D71335D-64CE-4810-8814-C9E9EB10D64D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2836E792-9B5C-45CF-BDA9-6A4ABC3A364B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2836E792-9B5C-45CF-BDA9-6A4ABC3A364B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2836E792-9B5C-45CF-BDA9-6A4ABC3A364B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2836E792-9B5C-45CF-BDA9-6A4ABC3A364B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
